@@ -4,6 +4,9 @@ from datetime import date
 
 PATH_TO_DATA = os.path.abspath('../data')
 PATH_TO_JSON_DATA = os.path.join(PATH_TO_DATA, 'operations.json')
+STARTING_INDEX_ENCRYPTED_SYMBOLS = 6
+ENDING_INDEX_ENCRYPTED_SYMBOLS = 12
+LENGTH_BLOCKS_IN_CARD = 4
 AMOUNT_OF_INFO = 5
 
 
@@ -91,13 +94,20 @@ def parse_bank_info(bank_info: str) -> str:
     """
     *bank_name, bank_address = bank_info.split()
     bank_address = list(bank_address)
+
     if bank_name[0] == 'Счет':
         # маскируем платёжную информацию счёта согласно формату **XXXX
         bank_address = ['**'] + bank_address[-4:]
+
+    # маскируем платёжную информацию банковской карты согласно формату XXXX XX** **** XXXX
     else:
-        # маскируем платёжную информацию банковской карты согласно формату XXXX XX** **** XXXX
-        bank_address[6:12] = ['*'] * 6
-        [bank_address.insert(index, ' ') for index in range(-len(bank_address) + 4, 0, 4)]
+        # заменяем числа в диапазоне от 6 до 12 на *
+        bank_address[STARTING_INDEX_ENCRYPTED_SYMBOLS:ENDING_INDEX_ENCRYPTED_SYMBOLS] = ['*'] * 6
+
+        # добавляем пробел в номер карты с шагом в 4 символа
+        for index in range(-len(bank_address) + LENGTH_BLOCKS_IN_CARD, 0, LENGTH_BLOCKS_IN_CARD):
+            bank_address.insert(index, ' ')
+
     return " ".join((*bank_name, ''.join(bank_address)))
 
 
