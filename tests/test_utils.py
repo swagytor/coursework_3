@@ -127,7 +127,8 @@ def test_get_data_from_json__file_not_found_error():
 
 
 def test_sort_data(data):
-    assert sort_data(data)[0]['date'] > sort_data(data)[-1]['date']
+    assert sort_data(data)[0]['date'] > sort_data(data)[4]['date']
+    assert sort_data(data)[0]['date'] == '2019-07-15T11:47:40.496961'
 
 
 def test_parse_date():
