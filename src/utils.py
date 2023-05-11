@@ -28,18 +28,13 @@ def sort_data(operations_data, amount: int = AMOUNT_OF_INFO) -> list[dict]:
     :param amount: количество возвращаемых данных
     :return: список N выполненных операций
     """
-    executed_data = []
+    # делаем выборку всех успешных банковских операций
+    executed_data = [data for data in operations_data if data.get('state') == 'EXECUTED']
 
-    for data in operations_data[::-1]:
-        if data.get('state') == 'EXECUTED':
-            executed_data.append(data)
-            if len(executed_data) == amount:
-                break
-
-    # сортируем список по недавним успешным операциям
+    # сортируем список по недавним операциям
     latest_data = sorted(executed_data, key=lambda x: from_string_to_iso(x['date']), reverse=True)
 
-    return latest_data
+    return latest_data[:amount]
 
 
 def from_string_to_iso(date_info: str) -> date:
