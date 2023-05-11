@@ -1,20 +1,20 @@
 import json
-import os.path
 from datetime import date
+from pathlib import Path
 
-PATH_TO_DATA = os.path.abspath('../data')
-PATH_TO_JSON_DATA = os.path.join(PATH_TO_DATA, 'operations.json')
+PATH_TO_DATA = f"{Path(__file__).parent.parent}/data"
+PATH_TO_JSON_DATA = f"{PATH_TO_DATA}/operations.json"
+
 STARTING_INDEX_ENCRYPTED_SYMBOLS = 6
 ENDING_INDEX_ENCRYPTED_SYMBOLS = 12
-LENGTH_BLOCKS_IN_CARD = 4
 AMOUNT_OF_INFO = 5
 
 
 def get_data_from_json(path: str = PATH_TO_JSON_DATA) -> list[dict]:
     """Возвращает список данных по банковских операциям"""
     # проверяем на наличие файла
-    if os.path.isfile(path):
-        with open(path, 'r', encoding='utf-8') as json_file:
+    if Path(path).exists():
+        with open(path) as json_file:
             json_data = json.load(json_file)
         return json_data
     else:
@@ -28,13 +28,18 @@ def sort_data(operations_data, amount: int = AMOUNT_OF_INFO) -> list[dict]:
     :param amount: количество возвращаемых данных
     :return: список N выполненных операций
     """
-    # делаем выборку всех успешных банковских операций
-    executed_data = [data for data in operations_data if data.get('state') == 'EXECUTED']
+    executed_data = []
 
-    # сортируем список по недавним операциям
+    for data in operations_data[::-1]:
+        if data.get('state') == 'EXECUTED':
+            executed_data.append(data)
+            if len(executed_data) == amount:
+                break
+
+    # сортируем список по недавним успешным операциям
     latest_data = sorted(executed_data, key=lambda x: from_string_to_iso(x['date']), reverse=True)
 
-    return latest_data[:amount]
+    return latest_data
 
 
 def from_string_to_iso(date_info: str) -> date:
@@ -100,7 +105,7 @@ def parse_bank_info(bank_info: str) -> str:
         bank_address[STARTING_INDEX_ENCRYPTED_SYMBOLS:ENDING_INDEX_ENCRYPTED_SYMBOLS] = ['*'] * 6
 
         # добавляем пробел в номер карты с шагом в 4 символа
-        for index in range(-len(bank_address) + LENGTH_BLOCKS_IN_CARD, 0, LENGTH_BLOCKS_IN_CARD):
+        for index in range(-len(bank_address) + 4, 0, 4):
             bank_address.insert(index, ' ')
 
     return " ".join((*bank_name, ''.join(bank_address)))
@@ -125,7 +130,8 @@ def show_info(info: dict) -> str:
     parsed_address = parse_address(info)
     parsed_amount = parse_amount(info)
 
-    return (f"{parsed_date} {info['description']}\n"
-            f"{parsed_address}\n"
-            f"{parsed_amount}\n"
-            )
+    return (
+        f"{parsed_date} {info['description']}\n"
+        f"{parsed_address}\n"
+        f"{parsed_amount}\n"
+    )
