@@ -4,9 +4,9 @@ from pathlib import Path
 
 PATH_TO_DATA = f"{Path(__file__).parent.parent}/data"
 PATH_TO_JSON_DATA = f"{PATH_TO_DATA}/operations.json"
-
 STARTING_INDEX_ENCRYPTED_SYMBOLS = 6
 ENDING_INDEX_ENCRYPTED_SYMBOLS = 12
+LENGTH_BLOCKS_IN_CARD = 4
 AMOUNT_OF_INFO = 5
 
 
@@ -100,7 +100,7 @@ def parse_bank_info(bank_info: str) -> str:
         bank_address[STARTING_INDEX_ENCRYPTED_SYMBOLS:ENDING_INDEX_ENCRYPTED_SYMBOLS] = ['*'] * 6
 
         # добавляем пробел в номер карты с шагом в 4 символа
-        for index in range(-len(bank_address) + 4, 0, 4):
+        for index in range(-len(bank_address) + LENGTH_BLOCKS_IN_CARD, 0, LENGTH_BLOCKS_IN_CARD):
             bank_address.insert(index, ' ')
 
     return " ".join((*bank_name, ''.join(bank_address)))
